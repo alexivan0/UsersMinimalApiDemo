@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "editec-users-api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50886;http://localhost:50887"
+    }
+  }
+}
