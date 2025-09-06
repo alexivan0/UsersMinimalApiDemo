@@ -177,6 +177,7 @@ app.MapPost("/api/users", [Authorize(Roles = "Admin")] async ([FromBody] UserCre
     };
     var validationErrors = DtoValidator.ValidateFullName(dto.FullName);
     validationErrors.AddRange(DtoValidator.ValidateEmail(dto.Email));
+    validationErrors.AddRange(DtoValidator.ValidatePassword(dto.Password, required: true));
     if (validationErrors.Count != 0)
         return Results.BadRequest(new { errors = validationErrors });
 
@@ -192,7 +193,8 @@ app.MapPut("/api/users/{id:guid}", [Authorize(Roles = "Admin")] async (Guid id, 
 
     var errors = DtoValidator.ValidateFullName(dto.FullName);
     errors.AddRange(DtoValidator.ValidateEmail(dto.Email));
-    if (errors.Any())
+    errors.AddRange(DtoValidator.ValidatePassword(dto.Password, required: false));
+    if (errors.Count != 0)
         return Results.BadRequest(new { errors });
 
     if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase) &&
@@ -331,6 +333,30 @@ public static class DtoValidator
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length < 2 || fullName.Length > 100)
             errors.Add("FullName must be between 2 and 100 characters.");
+        return errors;
+    }
+
+    public static List<string> ValidatePassword(string? password, bool required, int min = 6, int max = 100)
+    {
+        var errors = new List<string>();
+
+        if (required && string.IsNullOrWhiteSpace(password))
+        {
+            errors.Add("Password is required.");
+            return errors;
+        }
+
+        if (password is null) return errors;
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            errors.Add("Password cannot be empty.");
+            return errors;
+        }
+
+        if (password.Length < min || password.Length > max)
+            errors.Add($"Password must be between {min} and {max} characters.");
+
         return errors;
     }
 }
